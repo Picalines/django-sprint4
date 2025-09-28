@@ -1,6 +1,11 @@
 from django.urls import path
 
-from .views import ProfileDetailView, category_posts, index, post_detail
+from .views import (
+    CategoryDetailView,
+    IndexPage,
+    PostDetailView,
+    ProfileDetailView,
+)
 
 app_name = 'blog'
 
@@ -9,9 +14,11 @@ urlpatterns = [
     path(
         'profile/<slug:username>/', ProfileDetailView.as_view(), name='profile'
     ),
-    path('posts/<int:post_id>/', post_detail, name='post_detail'),
+    path('posts/<int:post_id>/', PostDetailView.as_view(), name='post_detail'),
     path(
-        'category/<slug:category_slug>/', category_posts, name='category_posts'
+        'category/<slug:category_slug>/',
+        CategoryDetailView.as_view(),
+        name='category_posts',
     ),
-    path('', index, name='index'),
+    path('', IndexPage.as_view(), name='index'),
 ]
