@@ -65,6 +65,8 @@ CSRF_FAILURE_VIEW = 'pages.views.csrf_forbidden_page'
 
 LOGIN_URL = reverse_lazy('login')
 
+LOGIN_REDIRECT_URL = reverse_lazy('blog:index')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
