@@ -2,6 +2,7 @@ from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
 from core.models import PublishedAndCreatedAt
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils.timezone import now
 
 User = get_user_model()
 
@@ -70,3 +71,11 @@ class Post(PublishedAndCreatedAt):
 
     def __str__(self) -> str:
         return self.title[:STR_LENGTH]
+
+    @staticmethod
+    def filter_visible(posts: models.QuerySet):
+        return posts.select_related("author", "category", "location").filter(
+            is_published=True,
+            pub_date__lt=now(),
+            category__is_published=True,
+        )
