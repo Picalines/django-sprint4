@@ -62,6 +62,7 @@ class Post(PublishedAndCreatedAt):
         on_delete=models.SET_NULL,
         verbose_name="Категория",
     )
+    image = models.ImageField('Изображение', blank=True)
 
     class Meta:
         default_related_name = "posts"
