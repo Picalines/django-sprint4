@@ -1,6 +1,7 @@
-from core.constants import POSTS_BY_PAGE
+from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import (
@@ -18,10 +19,12 @@ class IndexPage(TemplateView):
     template_name = 'blog/index.html'
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            'post_list': Post.filter_visible(Post.objects)[:POSTS_BY_PAGE],
-        }
+        context = super().get_context_data(**kwargs)
+        posts = Post.filter_visible(Post.objects)
+        page_number = self.request.GET.get('page')
+        paginator = Paginator(posts, POSTS_PER_PAGE)
+        context['page_obj'] = paginator.get_page(page_number)
+        return context
 
 
 class ProfileDetailView(DetailView):
@@ -30,6 +33,23 @@ class ProfileDetailView(DetailView):
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'profile'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        viewer = self.request.user
+        author = self.object
+        if viewer == author:
+            posts = Post.objects.select_related('author').filter(
+                author__username=author.username
+            )
+        else:
+            posts = Post.filter_visible(Post.objects)
+
+        page_number = self.request.GET.get('page')
+        paginator = Paginator(posts, POSTS_PER_PAGE)
+        context['page_obj'] = paginator.get_page(page_number)
+        return context
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -41,8 +61,9 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        user = self.get_object()
-        return reverse('blog:profile', kwargs={'username': user.username})
+        return reverse(
+            'blog:profile', kwargs={'username': self.object.username}
+        )
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -74,7 +95,9 @@ class CategoryDetailView(DetailView):
     context_object_name = 'category'
 
     def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            'post_list': Post.filter_visible(self.object.posts),
-        }
+        context = super().get_context_data(**kwargs)
+        posts = Post.filter_visible(self.object.posts)
+        page_number = self.request.GET.get('page')
+        paginator = Paginator(posts, POSTS_PER_PAGE)
+        context['page_obj'] = paginator.get_page(page_number)
+        return context
