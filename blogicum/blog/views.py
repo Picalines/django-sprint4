@@ -1,11 +1,12 @@
 from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.timezone import now
 from django.views.generic import (
     CreateView,
+    DeleteView,
     DetailView,
     TemplateView,
     UpdateView,
@@ -83,9 +84,35 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostDetailView(DetailView):
     template_name = 'blog/detail.html'
-    queryset = Post.filter_visible(Post.objects)
+    model = Post
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
+
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    template_name = 'blog/create.html'
+    model = Post
+    form_class = CreatePostForm
+    pk_url_kwarg = 'post_id'
+
+    def test_func(self):
+        return self.request.user == self.get_object().author
+
+    def get_success_url(self):
+        return reverse('blog:post_detail', kwargs={'post_id': self.object.pk})
+
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    template_name = 'blog/create.html'
+    model = Post
+    pk_url_kwarg = 'post_id'
+
+    def test_func(self):
+        return self.request.user == self.get_object().author
+
+    def get_success_url(self):
+        user = self.request.user
+        return reverse('blog:profile', kwargs={'username': user.username})
 
 
 class CategoryDetailView(DetailView):
