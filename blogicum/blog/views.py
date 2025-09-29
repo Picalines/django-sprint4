@@ -1,7 +1,16 @@
 from core.constants import POSTS_BY_PAGE
 from django.contrib.auth import get_user_model
-from django.views.generic import DetailView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
+from django.utils.timezone import now
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    TemplateView,
+    UpdateView,
+)
 
+from .forms import CreatePostForm
 from .models import Category, Post
 
 
@@ -21,6 +30,34 @@ class ProfileDetailView(DetailView):
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'profile'
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'blog/user.html'
+    model = get_user_model()
+    fields = ('first_name', 'last_name', 'username', 'email')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        user = self.get_object()
+        return reverse('blog:profile', kwargs={'username': user.username})
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'blog/create.html'
+    model = Post
+    form_class = CreatePostForm
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.created_at = now()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        user = self.request.user
+        return reverse('blog:profile', kwargs={'username': user.username})
 
 
 class PostDetailView(DetailView):
