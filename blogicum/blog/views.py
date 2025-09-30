@@ -2,6 +2,7 @@ from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import (
@@ -83,6 +84,16 @@ class PostDetailView(DetailView):
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
 
+    def get_object(self, *args, **kwargs):
+        post = super().get_object(*args, **kwargs)
+        viewer = self.request.user
+        author = post.author
+
+        is_public = post in Post.public(Post.objects)
+        if viewer != author and not is_public:
+            raise Http404()
+
+        return post
 
 
 class PostUpdateView(UserPassesTestMixin, UpdateView):
