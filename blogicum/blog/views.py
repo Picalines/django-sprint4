@@ -18,7 +18,9 @@ from .models import Category, Post
 
 class IndexPage(ListView):
     template_name = 'blog/index.html'
-    queryset = Post.filter_visible(Post.objects)
+    queryset = Post.with_comment_counts(Post.public(Post.objects)).order_by(
+        '-pub_date'
+    )
     paginate_by = POSTS_PER_PAGE
 
 
@@ -34,12 +36,11 @@ class ProfileDetailView(DetailView):
 
         viewer = self.request.user
         author = self.object
-        if viewer == author:
-            posts = Post.objects.select_related('author').filter(
-                author__username=author.username
-            )
-        else:
-            posts = Post.filter_visible(Post.objects)
+
+        posts = Post.of_author(Post.objects, author)
+        if viewer != author:
+            posts = Post.public(posts)
+        posts = Post.with_comment_counts(posts).order_by('-pub_date')
 
         page_number = self.request.GET.get('page')
         paginator = Paginator(posts, POSTS_PER_PAGE)
@@ -117,7 +118,9 @@ class CategoryDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = Post.filter_visible(self.object.posts)
+        posts = Post.with_comment_counts(
+            Post.public(self.object.posts)
+        ).order_by('-pub_date')
         page_number = self.request.GET.get('page')
         paginator = Paginator(posts, POSTS_PER_PAGE)
         context['page_obj'] = paginator.get_page(page_number)

@@ -74,19 +74,25 @@ class Post(PublishedAndCreatedAt):
         return self.title[:STR_LENGTH]
 
     @staticmethod
-    def filter_visible(posts: models.QuerySet):
+    def of_author(posts: models.QuerySet, user):
+        return posts.select_related('author').filter(
+            author__username=user.username
+        )
+
+    @staticmethod
+    def public(posts: models.QuerySet):
         return posts.select_related("author", "category", "location").filter(
             is_published=True,
             pub_date__lt=now(),
             category__is_published=True,
         )
 
+    @staticmethod
+    def with_comment_counts(posts: models.QuerySet):
+        return posts.annotate(comment_count=models.Count('comments'))
 
-class Comment(models.Model):
-    created_at = models.DateTimeField(
-        'Отправлен',
-        auto_now_add=True,
-    )
+
+class Comment(PublishedAndCreatedAt):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор комментария'
     )
