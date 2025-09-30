@@ -1,10 +1,25 @@
 from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
-from core.models import PublishedAndCreatedAt
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.timezone import now
 
 User = get_user_model()
+
+
+class PublishedAndCreatedAt(models.Model):
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.',
+    )
+    created_at = models.DateTimeField(
+        'Добавлено',
+        auto_now_add=True,
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('created_at',)
 
 
 class Category(PublishedAndCreatedAt):
