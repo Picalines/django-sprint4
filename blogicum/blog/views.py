@@ -84,7 +84,8 @@ class PostDetailView(DetailView):
     context_object_name = 'post'
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+
+class PostUpdateView(UserPassesTestMixin, UpdateView):
     template_name = 'blog/create.html'
     model = Post
     form_class = PostForm
@@ -97,7 +98,8 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('blog:post_detail', kwargs={'post_id': self.object.pk})
 
 
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+
+class PostDeleteView(UserPassesTestMixin, DeleteView):
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
