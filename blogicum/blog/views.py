@@ -65,7 +65,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = 'blog/create.html'
     model = Post
-    form_class = CreatePostForm
+    form_class = PostForm
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -87,7 +87,7 @@ class PostDetailView(DetailView):
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'blog/create.html'
     model = Post
-    form_class = CreatePostForm
+    form_class = PostForm
     pk_url_kwarg = 'post_id'
 
     def test_func(self):
