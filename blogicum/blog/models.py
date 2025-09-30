@@ -80,3 +80,23 @@ class Post(PublishedAndCreatedAt):
             pub_date__lt=now(),
             category__is_published=True,
         )
+
+
+class Comment(models.Model):
+    created_at = models.DateTimeField(
+        'Отправлен',
+        auto_now_add=True,
+    )
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='Автор комментария'
+    )
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, verbose_name='Пост'
+    )
+    text = models.TextField('Текст')
+
+    class Meta:
+        default_related_name = 'comments'
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ("-created_at",)
