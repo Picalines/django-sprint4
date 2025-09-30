@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import Http404
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import (
@@ -108,6 +109,12 @@ class PostUpdateView(UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse('blog:post_detail', kwargs={'post_id': self.object.pk})
 
+    def handle_no_permission(self):
+        return redirect(
+            reverse(
+                'blog:post_detail', kwargs={'post_id': self.get_object().pk}
+            )
+        )
 
 
 class PostDeleteView(UserPassesTestMixin, DeleteView):
