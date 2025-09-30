@@ -1,9 +1,11 @@
+from typing import cast
+
 from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.http import Http404
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import (
@@ -14,8 +16,8 @@ from django.views.generic import (
     UpdateView,
 )
 
-from .forms import CreatePostForm
-from .models import Category, Post
+from .forms import CommentForm, PostForm
+from .models import Category, Comment, Post
 
 
 class IndexPage(ListView):
@@ -96,6 +98,12 @@ class PostDetailView(DetailView):
 
         return post
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        context['comments'] = Comment.of_post(Comment.objects, self.object)
+        return context
+
 
 class PostUpdateView(UserPassesTestMixin, UpdateView):
     template_name = 'blog/create.html'
@@ -128,6 +136,55 @@ class PostDeleteView(UserPassesTestMixin, DeleteView):
     def get_success_url(self):
         user = self.request.user
         return reverse('blog:profile', kwargs={'username': user.username})
+
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+
+    _post = cast(Post, None)
+
+    def dispatch(self, request, *args, **kwargs):
+        visible_posts = Post.public(Post.objects)
+        self._post = get_object_or_404(visible_posts, pk=kwargs['post_id'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.post = self._post
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('blog:post_detail', kwargs={'post_id': self._post.pk})
+
+
+class CommentUpdateView(UserPassesTestMixin, UpdateView):
+    template_name = 'blog/comment.html'
+    model = Comment
+    pk_url_kwarg = 'comment_id'
+    form_class = CommentForm
+
+    def test_func(self):
+        return self.request.user == self.get_object().author
+
+    def get_success_url(self):
+        return reverse(
+            'blog:post_detail', kwargs={'post_id': self.object.post.pk}
+        )
+
+
+class CommentDeleteView(UserPassesTestMixin, DeleteView):
+    template_name = 'blog/comment.html'
+    model = Comment
+    pk_url_kwarg = 'comment_id'
+
+    def test_func(self):
+        return self.request.user == self.get_object().author
+
+    def get_success_url(self):
+        return reverse(
+            'blog:post_detail', kwargs={'post_id': self.object.post.pk}
+        )
 
 
 class CategoryDetailView(DetailView):

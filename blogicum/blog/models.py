@@ -105,4 +105,8 @@ class Comment(PublishedAndCreatedAt):
         default_related_name = 'comments'
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ("-created_at",)
+        ordering = ("created_at",)
+
+    @staticmethod
+    def of_post(comments: models.QuerySet, post: Post):
+        return comments.select_related('post').filter(post__pk=post.pk)
