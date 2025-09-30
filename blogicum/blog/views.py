@@ -2,13 +2,13 @@ from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
-    TemplateView,
+    ListView,
     UpdateView,
 )
 
@@ -16,16 +16,10 @@ from .forms import CreatePostForm
 from .models import Category, Post
 
 
-class IndexPage(TemplateView):
+class IndexPage(ListView):
     template_name = 'blog/index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        posts = Post.filter_visible(Post.objects)
-        page_number = self.request.GET.get('page')
-        paginator = Paginator(posts, POSTS_PER_PAGE)
-        context['page_obj'] = paginator.get_page(page_number)
-        return context
+    queryset = Post.filter_visible(Post.objects)
+    paginate_by = POSTS_PER_PAGE
 
 
 class ProfileDetailView(DetailView):
