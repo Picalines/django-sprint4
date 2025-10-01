@@ -5,6 +5,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import include, path, reverse_lazy
 from django.views.generic.edit import CreateView
 
+handler404 = 'pages.views.not_found_page'
+handler500 = 'pages.views.internal_error_page'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('django.contrib.auth.urls')),
@@ -21,7 +24,9 @@ urlpatterns = [
     path('', include('blog.urls', namespace='blog')),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    import debug_toolbar
 
-handler404 = 'pages.views.not_found_page'
-handler500 = 'pages.views.internal_error_page'
+    urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
