@@ -17,12 +17,35 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=256, verbose_name='Имя Категории')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'title',
+                    models.CharField(
+                        max_length=256, verbose_name='Имя Категории'
+                    ),
+                ),
                 ('description', models.TextField(verbose_name='Описание')),
-                ('slug', models.SlugField(unique=True, verbose_name='Уникальный Слаг')),
+                (
+                    'slug',
+                    models.SlugField(
+                        unique=True, verbose_name='Уникальный Слаг'
+                    ),
+                ),
                 ('is_published', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата, время')),
+                (
+                    'created_at',
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name='Дата, время'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'категория',
@@ -33,10 +56,26 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Location',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Заголовок')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(max_length=256, verbose_name='Заголовок'),
+                ),
                 ('is_published', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата, время')),
+                (
+                    'created_at',
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name='Дата, время'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'местоположение',
@@ -47,15 +86,62 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Post',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200, verbose_name='Заголовок')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'title',
+                    models.CharField(max_length=200, verbose_name='Заголовок'),
+                ),
                 ('text', models.TextField(verbose_name='Текст')),
-                ('pub_date', models.DateTimeField(verbose_name='Дата публикации')),
+                (
+                    'pub_date',
+                    models.DateTimeField(verbose_name='Дата публикации'),
+                ),
                 ('is_published', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата, время')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='posts', to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
-                ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='posts', to='blog.category', verbose_name='Тематическая категория')),
-                ('location', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='posts', to='blog.location', verbose_name='Географическая метка')),
+                (
+                    'created_at',
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name='Дата, время'
+                    ),
+                ),
+                (
+                    'author',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='posts',
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name='Автор',
+                    ),
+                ),
+                (
+                    'category',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='posts',
+                        to='blog.category',
+                        verbose_name='Тематическая категория',
+                    ),
+                ),
+                (
+                    'location',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='posts',
+                        to='blog.location',
+                        verbose_name='Географическая метка',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Публикация',

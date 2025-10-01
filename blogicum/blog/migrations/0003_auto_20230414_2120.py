@@ -13,11 +13,19 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='location',
             name='is_published',
-            field=models.BooleanField(default=True, help_text='Снимите галочку, чтобы скрыть публикацию.', verbose_name='Опубликовано'),
+            field=models.BooleanField(
+                default=True,
+                help_text='Снимите галочку, чтобы скрыть публикацию.',
+                verbose_name='Опубликовано',
+            ),
         ),
         migrations.AlterField(
             model_name='post',
             name='is_published',
-            field=models.BooleanField(default=True, help_text='Снимите галочку, чтобы скрыть публикацию.', verbose_name='Опубликовано'),
+            field=models.BooleanField(
+                default=True,
+                help_text='Снимите галочку, чтобы скрыть публикацию.',
+                verbose_name='Опубликовано',
+            ),
         ),
     ]
