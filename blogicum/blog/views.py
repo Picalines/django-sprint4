@@ -4,7 +4,6 @@ from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.timezone import now
@@ -22,10 +21,13 @@ from .models import Category, Comment, Post
 
 class IndexPage(ListView):
     template_name = 'blog/index.html'
-    queryset = Post.with_comment_counts(Post.public(Post.objects)).order_by(
-        '-pub_date'
-    )
     paginate_by = POSTS_PER_PAGE
+    queryset = (
+        Post.objects.public()
+        .with_comment_counts()
+        .from_old_to_new()
+        .select_related('location', 'author')
+    )
 
 
 class ProfileDetailView(DetailView):
@@ -41,10 +43,13 @@ class ProfileDetailView(DetailView):
         viewer = self.request.user
         author = self.object
 
-        posts = Post.of_author(Post.objects, author)
-        if viewer != author:
-            posts = Post.public(posts)
-        posts = Post.with_comment_counts(posts).order_by('-pub_date')
+        posts = (
+            Post.objects.of_author(author)
+            .visible_for(viewer)
+            .with_comment_counts()
+            .from_old_to_new()
+            .select_related('category', 'location')
+        )
 
         page_number = self.request.GET.get('page')
         paginator = Paginator(posts, POSTS_PER_PAGE)
@@ -87,21 +92,17 @@ class PostDetailView(DetailView):
     pk_url_kwarg = 'post_id'
     context_object_name = 'post'
 
-    def get_object(self, *args, **kwargs):
-        post = super().get_object(*args, **kwargs)
-        viewer = self.request.user
-        author = post.author
-
-        is_public = post in Post.public(Post.objects)
-        if viewer != author and not is_public:
-            raise Http404()
-
-        return post
+    def get_queryset(self):
+        return Post.objects.filter(pk=self.kwargs['post_id']).visible_for(
+            self.request.user
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
-        context['comments'] = Comment.of_post(Comment.objects, self.object)
+        context['comments'] = Comment.objects.of_post(
+            self.object
+        ).select_related('author')
         return context
 
 
@@ -145,8 +146,9 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     _post = cast(Post, None)
 
     def dispatch(self, request, *args, **kwargs):
-        visible_posts = Post.public(Post.objects)
-        self._post = get_object_or_404(visible_posts, pk=kwargs['post_id'])
+        self._post = get_object_or_404(
+            Post.objects.filter(pk=kwargs['post_id']).public()
+        )
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -190,14 +192,17 @@ class CommentDeleteView(UserPassesTestMixin, DeleteView):
 class CategoryDetailView(DetailView):
     template_name = 'blog/category.html'
     slug_url_kwarg = 'category_slug'
-    queryset = Category.objects.filter(is_published=True)
+    queryset = Category.objects.public()
     context_object_name = 'category'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = Post.with_comment_counts(
-            Post.public(self.object.posts)
-        ).order_by('-pub_date')
+        posts = (
+            self.object.posts.public()
+            .with_comment_counts()
+            .from_old_to_new()
+            .select_related('author', 'location')
+        )
         page_number = self.request.GET.get('page')
         paginator = Paginator(posts, POSTS_PER_PAGE)
         context['page_obj'] = paginator.get_page(page_number)

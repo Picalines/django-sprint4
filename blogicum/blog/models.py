@@ -22,7 +22,14 @@ class PublishedAndCreatedAt(models.Model):
         ordering = ('created_at',)
 
 
+class CategoryQuerySet(models.QuerySet):
+    def public(self):
+        return self.filter(is_published=True)
+
+
 class Category(PublishedAndCreatedAt):
+    objects = CategoryQuerySet.as_manager()
+
     title = models.CharField("Заголовок", max_length=FIELDS_MAX_LENGTH)
     description = models.TextField("Описание")
     slug = models.SlugField(
@@ -51,7 +58,37 @@ class Location(PublishedAndCreatedAt):
         return self.name[:STR_LENGTH]
 
 
+class PostQuerySet(models.QuerySet):
+    def of_author(self, user):
+        return self.select_related('author').filter(
+            author__username=user.username
+        )
+
+    def _public_q(self):
+        return models.Q(
+            is_published=True,
+            pub_date__lt=now(),
+            category__is_published=True,
+        )
+
+    def public(self):
+        return self.select_related('category').filter(self._public_q())
+
+    def visible_for(self, user):
+        return self.select_related('author', 'category').filter(
+            models.Q(author__username=user.username) | self._public_q()
+        )
+
+    def from_old_to_new(self):
+        return self.order_by('-pub_date')
+
+    def with_comment_counts(self):
+        return self.annotate(comment_count=models.Count('comments'))
+
+
 class Post(PublishedAndCreatedAt):
+    objects = PostQuerySet.as_manager()
+
     title = models.CharField("Заголовок", max_length=FIELDS_MAX_LENGTH)
     text = models.TextField("Текст")
     pub_date = models.DateTimeField(
@@ -88,26 +125,15 @@ class Post(PublishedAndCreatedAt):
     def __str__(self) -> str:
         return self.title[:STR_LENGTH]
 
-    @staticmethod
-    def of_author(posts: models.QuerySet, user):
-        return posts.select_related('author').filter(
-            author__username=user.username
-        )
 
-    @staticmethod
-    def public(posts: models.QuerySet):
-        return posts.select_related("author", "category", "location").filter(
-            is_published=True,
-            pub_date__lt=now(),
-            category__is_published=True,
-        )
-
-    @staticmethod
-    def with_comment_counts(posts: models.QuerySet):
-        return posts.annotate(comment_count=models.Count('comments'))
+class CommentQuerySet(models.QuerySet):
+    def of_post(self, post: Post):
+        return self.select_related('post').filter(post__pk=post.pk)
 
 
 class Comment(PublishedAndCreatedAt):
+    objects = CommentQuerySet.as_manager()
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор комментария'
     )
@@ -121,7 +147,3 @@ class Comment(PublishedAndCreatedAt):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ("created_at",)
-
-    @staticmethod
-    def of_post(comments: models.QuerySet, post: Post):
-        return comments.select_related('post').filter(post__pk=post.pk)
