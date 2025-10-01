@@ -147,7 +147,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self._post = get_object_or_404(
-            Post.objects.filter(pk=kwargs['post_id']).public()
+            Post.objects.filter(pk=kwargs['post_id']).visible_for(request.user)
         )
         return super().dispatch(request, *args, **kwargs)
 
