@@ -38,21 +38,16 @@ class ProfileDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        viewer = self.request.user
-        author = self.object
-
         posts = (
-            Post.objects.of_author(author)
-            .visible_for(viewer)
+            Post.objects.of_author(self.object)
+            .visible_for(self.request.user)
             .with_comment_counts()
             .from_old_to_new()
             .select_related('category', 'location')
         )
-
-        page_number = self.request.GET.get('page')
-        paginator = Paginator(posts, POSTS_PER_PAGE)
-        context['page_obj'] = paginator.get_page(page_number)
+        context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
+            self.request.GET.get('page')
+        )
         return context
 
 
@@ -81,8 +76,9 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        user = self.request.user
-        return reverse('blog:profile', kwargs={'username': user.username})
+        return reverse(
+            'blog:profile', kwargs={'username': self.request.user.username}
+        )
 
 
 class PostDetailView(DetailView):
@@ -134,8 +130,9 @@ class PostDeleteView(UserPassesTestMixin, DeleteView):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        user = self.request.user
-        return reverse('blog:profile', kwargs={'username': user.username})
+        return reverse(
+            'blog:profile', kwargs={'username': self.request.user.username}
+        )
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -202,7 +199,7 @@ class CategoryDetailView(DetailView):
             .from_old_to_new()
             .select_related('author', 'location')
         )
-        page_number = self.request.GET.get('page')
-        paginator = Paginator(posts, POSTS_PER_PAGE)
-        context['page_obj'] = paginator.get_page(page_number)
+        context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
+            self.request.GET.get('page')
+        )
         return context
