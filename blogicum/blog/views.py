@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import (
@@ -13,6 +12,7 @@ from django.views.generic import (
 from blog.forms import CommentForm, PostForm
 from blog.mixins import NoPermissionRedirectMixin
 from blog.models import Category, Comment, Post, User
+from blog.service import get_page_obj
 from core.constants import POSTS_PER_PAGE
 
 
@@ -31,14 +31,13 @@ class ProfileDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = (
+        context['page_obj'] = get_page_obj(
+            self.request,
             Post.objects.of_author(self.object)
             .visible_for(self.request.user)
             .with_comment_counts()
-            .from_old_to_new()
-        )
-        context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
-            self.request.GET.get('page')
+            .from_old_to_new(),
+            POSTS_PER_PAGE,
         )
         return context
 
@@ -186,10 +185,9 @@ class CategoryDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = (
-            self.object.posts.public().with_comment_counts().from_old_to_new()
-        )
-        context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
-            self.request.GET.get('page')
+        context['page_obj'] = get_page_obj(
+            self.request,
+            self.object.posts.public().with_comment_counts().from_old_to_new(),
+            POSTS_PER_PAGE,
         )
         return context
