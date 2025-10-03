@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.timezone import now
 
+from blog.querysets import CategoryQuerySet, CommentQuerySet, PostQuerySet
 from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
 
 User = get_user_model()
@@ -21,11 +21,6 @@ class PublishedAndCreatedAt(models.Model):
     class Meta:
         abstract = True
         ordering = ('created_at',)
-
-
-class CategoryQuerySet(models.QuerySet):
-    def public(self):
-        return self.filter(is_published=True)
 
 
 class Category(PublishedAndCreatedAt):
@@ -57,34 +52,6 @@ class Location(PublishedAndCreatedAt):
 
     def __str__(self) -> str:
         return self.name[:STR_LENGTH]
-
-
-class PostQuerySet(models.QuerySet):
-    def of_author(self, user):
-        return self.select_related('author').filter(
-            author__username=user.username
-        )
-
-    def _public_q(self):
-        return models.Q(
-            is_published=True,
-            pub_date__lt=now(),
-            category__is_published=True,
-        )
-
-    def public(self):
-        return self.select_related('category').filter(self._public_q())
-
-    def visible_for(self, user):
-        return self.select_related('author', 'category').filter(
-            models.Q(author__username=user.username) | self._public_q()
-        )
-
-    def from_old_to_new(self):
-        return self.order_by('-pub_date')
-
-    def with_comment_counts(self):
-        return self.annotate(comment_count=models.Count('comments'))
 
 
 class Post(PublishedAndCreatedAt):
@@ -125,11 +92,6 @@ class Post(PublishedAndCreatedAt):
 
     def __str__(self) -> str:
         return self.title[:STR_LENGTH]
-
-
-class CommentQuerySet(models.QuerySet):
-    def of_post(self, post: Post):
-        return self.select_related('post').filter(post__pk=post.pk)
 
 
 class Comment(PublishedAndCreatedAt):
