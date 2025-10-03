@@ -55,7 +55,10 @@ class Migration(migrations.Migration):
             model_name='category',
             name='slug',
             field=models.SlugField(
-                help_text='Идентификатор страницы для URL; разрешены символы латиницы, цифры, дефис и подчёркивание.',
+                help_text=(
+                    'Идентификатор страницы для URL; разрешены символы '
+                    'латиницы, цифры, дефис и подчёркивание.'
+                ),
                 unique=True,
                 verbose_name='Идентификатор',
             ),
@@ -138,7 +141,10 @@ class Migration(migrations.Migration):
             model_name='post',
             name='pub_date',
             field=models.DateTimeField(
-                help_text='Если установить дату и время в будущем — можно делать отложенные публикации.',
+                help_text=(
+                    'Если установить дату и время в будущем — можно '
+                    'делать отложенные публикации.'
+                ),
                 verbose_name='Дата и время публикации',
             ),
         ),

@@ -28,8 +28,10 @@ class Category(PublishedAndCreatedAt):
     description = models.TextField("Описание")
     slug = models.SlugField(
         "Идентификатор",
-        help_text="Идентификатор страницы для URL; разрешены символы "
-        "латиницы, цифры, дефис и подчёркивание.",
+        help_text=(
+            'Идентификатор страницы для URL; '
+            'разрешены символы латиницы, цифры, дефис и подчёркивание.'
+        ),
         unique=True,
     )
 
