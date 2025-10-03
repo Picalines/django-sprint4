@@ -83,7 +83,6 @@ class PostDetailView(DetailView):
     template_name = 'blog/detail.html'
     model = Post
     pk_url_kwarg = 'post_id'
-    context_object_name = 'post'
 
     def get_queryset(self):
         return Post.objects.filter(pk=self.kwargs['post_id']).visible_for(
