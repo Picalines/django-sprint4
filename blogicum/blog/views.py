@@ -98,7 +98,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostUpdateView(UserPassesTestMixin, UpdateView):
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'blog/create.html'
     model = Post
     form_class = PostForm
@@ -118,7 +118,7 @@ class PostUpdateView(UserPassesTestMixin, UpdateView):
         )
 
 
-class PostDeleteView(UserPassesTestMixin, DeleteView):
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
@@ -153,7 +153,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return reverse('blog:post_detail', kwargs={'post_id': self._post.pk})
 
 
-class CommentUpdateView(UserPassesTestMixin, UpdateView):
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'blog/comment.html'
     model = Comment
     pk_url_kwarg = 'comment_id'
@@ -168,7 +168,7 @@ class CommentUpdateView(UserPassesTestMixin, UpdateView):
         )
 
 
-class CommentDeleteView(UserPassesTestMixin, DeleteView):
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'blog/comment.html'
     model = Comment
     pk_url_kwarg = 'comment_id'
