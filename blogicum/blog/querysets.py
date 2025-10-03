@@ -4,9 +4,7 @@ from django.utils.timezone import now
 
 class PostQuerySet(models.QuerySet):
     def of_author(self, user):
-        return self.select_related('author').filter(
-            author__username=user.username
-        )
+        return self.filter(author__username=user.username)
 
     def _public_q(self):
         return models.Q(
@@ -16,10 +14,10 @@ class PostQuerySet(models.QuerySet):
         )
 
     def public(self):
-        return self.select_related('category').filter(self._public_q())
+        return self.filter(self._public_q())
 
     def visible_for(self, user):
-        return self.select_related('author', 'category').filter(
+        return self.filter(
             models.Q(author__username=user.username) | self._public_q()
         )
 
@@ -32,7 +30,7 @@ class PostQuerySet(models.QuerySet):
 
 class CommentQuerySet(models.QuerySet):
     def of_post(self, post):
-        return self.select_related('post').filter(post__pk=post.pk)
+        return self.filter(post__pk=post.pk)
 
 
 class CategoryQuerySet(models.QuerySet):

@@ -20,12 +20,7 @@ from core.constants import POSTS_PER_PAGE
 class IndexPage(ListView):
     template_name = 'blog/index.html'
     paginate_by = POSTS_PER_PAGE
-    queryset = (
-        Post.objects.public()
-        .with_comment_counts()
-        .from_old_to_new()
-        .select_related('location', 'author')
-    )
+    queryset = Post.objects.public().with_comment_counts().from_old_to_new()
 
 
 class ProfileDetailView(DetailView):
@@ -42,7 +37,6 @@ class ProfileDetailView(DetailView):
             .visible_for(self.request.user)
             .with_comment_counts()
             .from_old_to_new()
-            .select_related('category', 'location')
         )
         context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
             self.request.GET.get('page')
@@ -88,9 +82,7 @@ class PostDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
-        context['comments'] = Comment.objects.of_post(
-            self.object
-        ).select_related('author')
+        context['comments'] = Comment.objects.of_post(self.object)
         return context
 
 
@@ -179,10 +171,7 @@ class CategoryDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         posts = (
-            self.object.posts.public()
-            .with_comment_counts()
-            .from_old_to_new()
-            .select_related('author', 'location')
+            self.object.posts.public().with_comment_counts().from_old_to_new()
         )
         context['page_obj'] = Paginator(posts, POSTS_PER_PAGE).get_page(
             self.request.GET.get('page')

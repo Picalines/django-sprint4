@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from blog.querysets import CategoryQuerySet, CommentQuerySet, PostQuerySet
+from blog.managers import CategoryManager, CommentManager, PostManager
 from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
 
 User = get_user_model()
@@ -35,7 +35,7 @@ class Category(PublishedAndCreatedAt):
         unique=True,
     )
 
-    objects = CategoryQuerySet.as_manager()
+    objects = CategoryManager()
 
     class Meta(PublishedAndCreatedAt.Meta):
         verbose_name = "категория"
@@ -84,7 +84,7 @@ class Post(PublishedAndCreatedAt):
     )
     image = models.ImageField('Изображение', blank=True)
 
-    objects = PostQuerySet.as_manager()
+    objects = PostManager()
 
     class Meta:
         default_related_name = "posts"
@@ -105,7 +105,7 @@ class Comment(PublishedAndCreatedAt):
     )
     text = models.TextField('Текст')
 
-    objects = CommentQuerySet.as_manager()
+    objects = CommentManager()
 
     class Meta:
         default_related_name = 'comments'
