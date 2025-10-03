@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import (
     CreateView,
@@ -11,6 +11,7 @@ from django.views.generic import (
 )
 
 from blog.forms import CommentForm, PostForm
+from blog.mixins import NoPermissionRedirectMixin
 from blog.models import Category, Comment, Post, User
 from core.constants import POSTS_PER_PAGE
 
@@ -84,11 +85,17 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class PostUpdateView(
+    LoginRequiredMixin,
+    NoPermissionRedirectMixin,
+    UserPassesTestMixin,
+    UpdateView,
+):
     template_name = 'blog/create.html'
     model = Post
     form_class = PostForm
     pk_url_kwarg = 'post_id'
+    no_permission_url = 'blog:post_detail'
 
     def test_func(self):
         return self.request.user == self.get_object().author
@@ -96,31 +103,23 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.object.pk])
 
-    def handle_no_permission(self):
-        if not self.request.user.is_authenticated:
-            return super().handle_no_permission()
-        return redirect(
-            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
-        )
 
-
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class PostDeleteView(
+    LoginRequiredMixin,
+    NoPermissionRedirectMixin,
+    UserPassesTestMixin,
+    DeleteView,
+):
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
+    no_permission_url = 'blog:post_detail'
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
         return reverse('blog:profile', args=[self.request.user.username])
-
-    def handle_no_permission(self):
-        if not self.request.user.is_authenticated:
-            return super().handle_no_permission()
-        return redirect(
-            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
-        )
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -140,11 +139,18 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return reverse('blog:post_detail', args=[self.kwargs['post_id']])
 
 
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class CommentUpdateView(
+    LoginRequiredMixin,
+    NoPermissionRedirectMixin,
+    UserPassesTestMixin,
+    UpdateView,
+):
     template_name = 'blog/comment.html'
     model = Comment
     pk_url_kwarg = 'comment_id'
     form_class = CommentForm
+    no_permission_url = 'blog:post_detail'
+    no_permission_kwargs = ['post_id']
 
     def test_func(self):
         return self.request.user == self.get_object().author
@@ -152,31 +158,24 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.object.post.pk])
 
-    def handle_no_permission(self):
-        if not self.request.user.is_authenticated:
-            return super().handle_no_permission()
-        return redirect(
-            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
-        )
 
-
-class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class CommentDeleteView(
+    LoginRequiredMixin,
+    NoPermissionRedirectMixin,
+    UserPassesTestMixin,
+    DeleteView,
+):
     template_name = 'blog/comment.html'
     model = Comment
     pk_url_kwarg = 'comment_id'
+    no_permission_url = 'blog:post_detail'
+    no_permission_kwargs = ['post_id']
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.object.post.pk])
-
-    def handle_no_permission(self):
-        if not self.request.user.is_authenticated:
-            return super().handle_no_permission()
-        return redirect(
-            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
-        )
 
 
 class CategoryDetailView(DetailView):
