@@ -1,7 +1,8 @@
-from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.timezone import now
+
+from core.constants import FIELDS_MAX_LENGTH, STR_LENGTH
 
 User = get_user_model()
 

@@ -8,6 +8,11 @@ force-exclude = '''
 )
 '''
 
+[tool.isort]
+profile = "black"
+src_paths = ["./blogicum"]
+extend_skip_glob = ["tests/*"]
+
 [tool.pyright]
 venvPath = '.'
 venv = 'venv'

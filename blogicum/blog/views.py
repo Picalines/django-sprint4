@@ -1,6 +1,5 @@
 from typing import cast
 
-from core.constants import POSTS_PER_PAGE
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
@@ -15,8 +14,9 @@ from django.views.generic import (
     UpdateView,
 )
 
-from .forms import CommentForm, PostForm
-from .models import Category, Comment, Post
+from blog.forms import CommentForm, PostForm
+from blog.models import Category, Comment, Post
+from core.constants import POSTS_PER_PAGE
 
 
 class IndexPage(ListView):

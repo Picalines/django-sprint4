@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import AboutPage, RulesPage
+from pages.views import AboutPage, RulesPage
 
 app_name = "pages"
 
