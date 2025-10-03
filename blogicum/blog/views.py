@@ -4,7 +4,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.utils.timezone import now
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -72,7 +71,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.instance.created_at = now()
         return super().form_valid(form)
 
     def get_success_url(self):
