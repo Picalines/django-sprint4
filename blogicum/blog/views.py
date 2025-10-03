@@ -97,8 +97,10 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('blog:post_detail', args=[self.object.pk])
 
     def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
         return redirect(
-            reverse('blog:post_detail', args=[self.get_object().pk])
+            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
         )
 
 
@@ -112,6 +114,13 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         return reverse('blog:profile', args=[self.request.user.username])
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return redirect(
+            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
+        )
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -143,6 +152,13 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.object.post.pk])
 
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return redirect(
+            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
+        )
+
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     template_name = 'blog/comment.html'
@@ -154,6 +170,13 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         return reverse('blog:post_detail', args=[self.object.post.pk])
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+        return redirect(
+            reverse('blog:post_detail', args=[self.kwargs[self.pk_url_kwarg]])
+        )
 
 
 class CategoryDetailView(DetailView):
