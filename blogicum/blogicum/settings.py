@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 
-from django.urls import reverse_lazy
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = (
@@ -69,9 +67,9 @@ WSGI_APPLICATION = 'blogicum.wsgi.application'
 
 CSRF_FAILURE_VIEW = 'pages.views.csrf_forbidden_page'
 
-LOGIN_URL = reverse_lazy('login')
+LOGIN_URL = 'login'
 
-LOGIN_REDIRECT_URL = reverse_lazy('blog:index')
+LOGIN_REDIRECT_URL = 'blog:index'
 
 DATABASES = {
     'default': {
