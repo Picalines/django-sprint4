@@ -1,5 +1,3 @@
-from typing import cast
-
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
@@ -120,21 +118,17 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentForm
 
-    _post = cast(Post, None)
-
-    def dispatch(self, request, *args, **kwargs):
-        self._post = get_object_or_404(
-            Post.objects.filter(pk=kwargs['post_id']).visible_for(request.user)
-        )
-        return super().dispatch(request, *args, **kwargs)
-
     def form_valid(self, form):
+        form.instance.post = get_object_or_404(
+            Post.objects.filter(pk=self.kwargs['post_id']).visible_for(
+                self.request.user
+            )
+        )
         form.instance.author = self.request.user
-        form.instance.post = self._post
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('blog:post_detail', args=[self._post.pk])
+        return reverse('blog:post_detail', args=[self.kwargs['post_id']])
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
