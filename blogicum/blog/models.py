@@ -111,3 +111,8 @@ class Comment(PublishedAndCreatedAt):
         default_related_name = 'comments'
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return f'{self.post.title}: [@{self.author.username}] {self.text}'[
+            :STR_LENGTH
+        ]
