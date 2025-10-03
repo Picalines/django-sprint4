@@ -59,9 +59,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse(
-            'blog:profile', kwargs={'username': self.object.username}
-        )
+        return reverse('blog:profile', args=[self.object.username])
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -74,9 +72,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse(
-            'blog:profile', kwargs={'username': self.request.user.username}
-        )
+        return reverse('blog:profile', args=[self.request.user.username])
 
 
 class PostDetailView(DetailView):
@@ -108,13 +104,11 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={'post_id': self.object.pk})
+        return reverse('blog:post_detail', args=[self.object.pk])
 
     def handle_no_permission(self):
         return redirect(
-            reverse(
-                'blog:post_detail', kwargs={'post_id': self.get_object().pk}
-            )
+            reverse('blog:post_detail', args=[self.get_object().pk])
         )
 
 
@@ -127,9 +121,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        return reverse(
-            'blog:profile', kwargs={'username': self.request.user.username}
-        )
+        return reverse('blog:profile', args=[self.request.user.username])
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -150,7 +142,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={'post_id': self._post.pk})
+        return reverse('blog:post_detail', args=[self._post.pk])
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -163,9 +155,7 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        return reverse(
-            'blog:post_detail', kwargs={'post_id': self.object.post.pk}
-        )
+        return reverse('blog:post_detail', args=[self.object.post.pk])
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -177,9 +167,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == self.get_object().author
 
     def get_success_url(self):
-        return reverse(
-            'blog:post_detail', kwargs={'post_id': self.object.post.pk}
-        )
+        return reverse('blog:post_detail', args=[self.object.post.pk])
 
 
 class CategoryDetailView(DetailView):
