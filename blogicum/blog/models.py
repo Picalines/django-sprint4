@@ -24,8 +24,6 @@ class PublishedAndCreatedAt(models.Model):
 
 
 class Category(PublishedAndCreatedAt):
-    objects = CategoryQuerySet.as_manager()
-
     title = models.CharField("Заголовок", max_length=FIELDS_MAX_LENGTH)
     description = models.TextField("Описание")
     slug = models.SlugField(
@@ -34,6 +32,8 @@ class Category(PublishedAndCreatedAt):
         "латиницы, цифры, дефис и подчёркивание.",
         unique=True,
     )
+
+    objects = CategoryQuerySet.as_manager()
 
     class Meta(PublishedAndCreatedAt.Meta):
         verbose_name = "категория"
@@ -55,8 +55,6 @@ class Location(PublishedAndCreatedAt):
 
 
 class Post(PublishedAndCreatedAt):
-    objects = PostQuerySet.as_manager()
-
     title = models.CharField("Заголовок", max_length=FIELDS_MAX_LENGTH)
     text = models.TextField("Текст")
     pub_date = models.DateTimeField(
@@ -84,6 +82,8 @@ class Post(PublishedAndCreatedAt):
     )
     image = models.ImageField('Изображение', blank=True)
 
+    objects = PostQuerySet.as_manager()
+
     class Meta:
         default_related_name = "posts"
         verbose_name = "публикация"
@@ -95,8 +95,6 @@ class Post(PublishedAndCreatedAt):
 
 
 class Comment(PublishedAndCreatedAt):
-    objects = CommentQuerySet.as_manager()
-
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор комментария'
     )
@@ -104,6 +102,8 @@ class Comment(PublishedAndCreatedAt):
         Post, on_delete=models.CASCADE, verbose_name='Пост'
     )
     text = models.TextField('Текст')
+
+    objects = CommentQuerySet.as_manager()
 
     class Meta:
         default_related_name = 'comments'
