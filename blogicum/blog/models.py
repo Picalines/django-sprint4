@@ -86,7 +86,7 @@ class Post(PublishedAndCreatedAt):
 
     objects = PostManager()
 
-    class Meta:
+    class Meta(PublishedAndCreatedAt.Meta):
         default_related_name = "posts"
         verbose_name = "публикация"
         verbose_name_plural = "Публикации"
@@ -107,8 +107,7 @@ class Comment(PublishedAndCreatedAt):
 
     objects = CommentManager()
 
-    class Meta:
+    class Meta(PublishedAndCreatedAt.Meta):
         default_related_name = 'comments'
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ("created_at",)
