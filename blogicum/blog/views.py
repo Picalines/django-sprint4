@@ -1,6 +1,5 @@
 from typing import cast
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
@@ -15,7 +14,7 @@ from django.views.generic import (
 )
 
 from blog.forms import CommentForm, PostForm
-from blog.models import Category, Comment, Post
+from blog.models import Category, Comment, Post, User
 from core.constants import POSTS_PER_PAGE
 
 
@@ -32,7 +31,7 @@ class IndexPage(ListView):
 
 class ProfileDetailView(DetailView):
     template_name = 'blog/profile.html'
-    model = get_user_model()
+    model = User
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'profile'
@@ -59,7 +58,7 @@ class ProfileDetailView(DetailView):
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'blog/user.html'
-    model = get_user_model()
+    model = User
     fields = ('first_name', 'last_name', 'username', 'email')
 
     def get_object(self, queryset=None):
