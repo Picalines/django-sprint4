@@ -1,5 +1,11 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import redirect
 from django.urls import reverse
+
+
+class UserIsAuthorMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user == self.get_object().author
 
 
 class SuccessUrlArgsMixin:

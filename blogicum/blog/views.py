@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.views.generic import (
     CreateView,
@@ -9,7 +9,11 @@ from django.views.generic import (
 )
 
 from blog.forms import CommentForm, PostForm
-from blog.mixins import NoPermissionRedirectMixin, SuccessUrlArgsMixin
+from blog.mixins import (
+    NoPermissionRedirectMixin,
+    SuccessUrlArgsMixin,
+    UserIsAuthorMixin,
+)
 from blog.models import Category, Comment, Post, User
 from blog.service import get_page_obj
 from core.constants import POSTS_PER_PAGE
@@ -88,7 +92,7 @@ class PostDetailView(DetailView):
 class PostUpdateView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
-    UserPassesTestMixin,
+    UserIsAuthorMixin,
     SuccessUrlArgsMixin,
     UpdateView,
 ):
@@ -99,9 +103,6 @@ class PostUpdateView(
     no_permission_url = 'blog:post_detail'
     success_url = 'blog:post_detail'
 
-    def test_func(self):
-        return self.request.user == self.get_object().author
-
     def get_success_url_args(self):
         return [self.object.pk]
 
@@ -109,7 +110,7 @@ class PostUpdateView(
 class PostDeleteView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
-    UserPassesTestMixin,
+    UserIsAuthorMixin,
     SuccessUrlArgsMixin,
     DeleteView,
 ):
@@ -118,9 +119,6 @@ class PostDeleteView(
     pk_url_kwarg = 'post_id'
     no_permission_url = 'blog:post_detail'
     success_url = 'blog:profile'
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
     def get_success_url_args(self):
         return [self.request.user.username]
@@ -147,7 +145,7 @@ class CommentCreateView(LoginRequiredMixin, SuccessUrlArgsMixin, CreateView):
 class CommentUpdateView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
-    UserPassesTestMixin,
+    UserIsAuthorMixin,
     SuccessUrlArgsMixin,
     UpdateView,
 ):
@@ -159,9 +157,6 @@ class CommentUpdateView(
     no_permission_kwargs = ['post_id']
     success_url = 'blog:post_detail'
 
-    def test_func(self):
-        return self.request.user == self.get_object().author
-
     def get_success_url_args(self):
         return [self.object.post.pk]
 
@@ -169,7 +164,7 @@ class CommentUpdateView(
 class CommentDeleteView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
-    UserPassesTestMixin,
+    UserIsAuthorMixin,
     SuccessUrlArgsMixin,
     DeleteView,
 ):
@@ -179,9 +174,6 @@ class CommentDeleteView(
     no_permission_url = 'blog:post_detail'
     no_permission_kwargs = ['post_id']
     success_url = 'blog:post_detail'
-
-    def test_func(self):
-        return self.request.user == self.get_object().author
 
     def get_success_url_args(self):
         return [self.object.post.pk]
