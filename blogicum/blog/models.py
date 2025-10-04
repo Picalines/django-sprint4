@@ -113,6 +113,6 @@ class Comment(PublishedAndCreatedAt):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return f'{self.post.title}: [@{self.author.username}] {self.text}'[
-            :STR_LENGTH
-        ]
+        return (
+            f'{self.post}: [@{self.author.username}] {self.text[:STR_LENGTH]}'
+        )
