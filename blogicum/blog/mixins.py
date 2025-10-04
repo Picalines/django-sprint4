@@ -2,6 +2,16 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 
+class SuccessUrlArgsMixin:
+    success_url = None
+
+    def get_success_url_args(self):
+        return []
+
+    def get_success_url(self):
+        return reverse(self.success_url, args=self.get_success_url_args())
+
+
 class NoPermissionRedirectMixin:
     no_permission_url = None
     no_permission_kwargs = None

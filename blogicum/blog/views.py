@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404
-from django.urls import reverse
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -10,7 +9,7 @@ from django.views.generic import (
 )
 
 from blog.forms import CommentForm, PostForm
-from blog.mixins import NoPermissionRedirectMixin
+from blog.mixins import NoPermissionRedirectMixin, SuccessUrlArgsMixin
 from blog.models import Category, Comment, Post, User
 from blog.service import get_page_obj
 from core.constants import POSTS_PER_PAGE
@@ -42,29 +41,31 @@ class ProfileDetailView(DetailView):
         return context
 
 
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, SuccessUrlArgsMixin, UpdateView):
     template_name = 'blog/user.html'
     model = User
     fields = ('first_name', 'last_name', 'username', 'email')
+    success_url = 'blog:profile'
 
     def get_object(self, queryset=None):
         return self.request.user
 
-    def get_success_url(self):
-        return reverse('blog:profile', args=[self.object.username])
+    def get_success_url_args(self):
+        return [self.object.username]
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, SuccessUrlArgsMixin, CreateView):
     template_name = 'blog/create.html'
     model = Post
     form_class = PostForm
+    success_url = 'blog:profile'
 
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse('blog:profile', args=[self.request.user.username])
+    def get_success_url_args(self):
+        return [self.request.user.username]
 
 
 class PostDetailView(DetailView):
@@ -88,6 +89,7 @@ class PostUpdateView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
     UserPassesTestMixin,
+    SuccessUrlArgsMixin,
     UpdateView,
 ):
     template_name = 'blog/create.html'
@@ -95,35 +97,39 @@ class PostUpdateView(
     form_class = PostForm
     pk_url_kwarg = 'post_id'
     no_permission_url = 'blog:post_detail'
+    success_url = 'blog:post_detail'
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
-    def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.object.pk])
+    def get_success_url_args(self):
+        return [self.object.pk]
 
 
 class PostDeleteView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
     UserPassesTestMixin,
+    SuccessUrlArgsMixin,
     DeleteView,
 ):
     template_name = 'blog/create.html'
     model = Post
     pk_url_kwarg = 'post_id'
     no_permission_url = 'blog:post_detail'
+    success_url = 'blog:profile'
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
-    def get_success_url(self):
-        return reverse('blog:profile', args=[self.request.user.username])
+    def get_success_url_args(self):
+        return [self.request.user.username]
 
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
+class CommentCreateView(LoginRequiredMixin, SuccessUrlArgsMixin, CreateView):
     model = Comment
     form_class = CommentForm
+    success_url = 'blog:post_detail'
 
     def form_valid(self, form):
         form.instance.post = get_object_or_404(
@@ -134,14 +140,15 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.kwargs['post_id']])
+    def get_success_url_args(self):
+        return [self.kwargs['post_id']]
 
 
 class CommentUpdateView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
     UserPassesTestMixin,
+    SuccessUrlArgsMixin,
     UpdateView,
 ):
     template_name = 'blog/comment.html'
@@ -150,18 +157,20 @@ class CommentUpdateView(
     form_class = CommentForm
     no_permission_url = 'blog:post_detail'
     no_permission_kwargs = ['post_id']
+    success_url = 'blog:post_detail'
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
-    def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.object.post.pk])
+    def get_success_url_args(self):
+        return [self.object.post.pk]
 
 
 class CommentDeleteView(
     LoginRequiredMixin,
     NoPermissionRedirectMixin,
     UserPassesTestMixin,
+    SuccessUrlArgsMixin,
     DeleteView,
 ):
     template_name = 'blog/comment.html'
@@ -169,12 +178,13 @@ class CommentDeleteView(
     pk_url_kwarg = 'comment_id'
     no_permission_url = 'blog:post_detail'
     no_permission_kwargs = ['post_id']
+    success_url = 'blog:post_detail'
 
     def test_func(self):
         return self.request.user == self.get_object().author
 
-    def get_success_url(self):
-        return reverse('blog:post_detail', args=[self.object.post.pk])
+    def get_success_url_args(self):
+        return [self.object.post.pk]
 
 
 class CategoryDetailView(DetailView):
