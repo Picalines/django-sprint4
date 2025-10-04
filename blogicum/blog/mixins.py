@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -30,3 +31,20 @@ class NoPermissionRedirectMixin:
         passed_kwargs = {kwarg: self.kwargs[kwarg] for kwarg in kwargs_to_pass}
 
         return redirect(reverse(self.no_permission_url, kwargs=passed_kwargs))
+
+
+class SubListMixin:
+    paginate_sublist_by = None
+
+    def get_sublist_queryset(self):
+        raise NotImplementedError(
+            'SubListMixin.get_sublist_queryset is not implemented'
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_obj'] = Paginator(
+            self.get_sublist_queryset(),
+            self.paginate_sublist_by,
+        ).get_page(self.request.GET.get('page'))
+        return context

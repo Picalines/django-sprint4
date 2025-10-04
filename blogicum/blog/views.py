@@ -11,11 +11,11 @@ from django.views.generic import (
 from blog.forms import CommentForm, PostForm
 from blog.mixins import (
     NoPermissionRedirectMixin,
+    SubListMixin,
     SuccessUrlArgsMixin,
     UserIsAuthorMixin,
 )
 from blog.models import Category, Comment, Post, User
-from blog.service import get_page_obj
 from core.constants import POSTS_PER_PAGE
 
 
@@ -25,24 +25,21 @@ class IndexPage(ListView):
     queryset = Post.objects.public().with_comment_counts().from_old_to_new()
 
 
-class ProfileDetailView(DetailView):
+class ProfileDetailView(SubListMixin, DetailView):
     template_name = 'blog/profile.html'
     model = User
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'profile'
+    paginate_sublist_by = POSTS_PER_PAGE
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_obj'] = get_page_obj(
-            self.request,
+    def get_sublist_queryset(self):
+        return (
             Post.objects.of_author(self.object)
             .visible_for(self.request.user)
             .with_comment_counts()
-            .from_old_to_new(),
-            POSTS_PER_PAGE,
+            .from_old_to_new()
         )
-        return context
 
 
 class ProfileUpdateView(LoginRequiredMixin, SuccessUrlArgsMixin, UpdateView):
@@ -179,17 +176,14 @@ class CommentDeleteView(
         return [self.object.post.pk]
 
 
-class CategoryDetailView(DetailView):
+class CategoryDetailView(SubListMixin, DetailView):
     template_name = 'blog/category.html'
     slug_url_kwarg = 'category_slug'
     queryset = Category.objects.public()
     context_object_name = 'category'
+    paginate_sublist_by = POSTS_PER_PAGE
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_obj'] = get_page_obj(
-            self.request,
-            self.object.posts.public().with_comment_counts().from_old_to_new(),
-            POSTS_PER_PAGE,
+    def get_sublist_queryset(self):
+        return (
+            self.object.posts.public().with_comment_counts().from_old_to_new()
         )
-        return context
